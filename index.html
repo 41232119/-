@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>T1 粉絲網站 (網頁製作課堂報告)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --t1-red: #E4002B; /* T1 官方紅 */
+            --t1-glow: #ff1f4b;
+            --t1-black: #0a0a0a;
+            --t1-dark: #121212;
+            --t1-gray: #888;
+            --text-white: #ffffff;
+            --card-bg: #1a1a1a;
+            --gold: #D4AF37; /* 冠軍金 */
+        }
+
+        /* ==== 全局設定 ==== */
+        body {
+            margin: 0;
+            font-family: "Rajdhani", "Noto Sans TC", sans-serif;
+            background-color: var(--t1-black);
+            color: var(--text-white);
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.95)),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--t1-red); border-radius: 4px; }
+
+        /* ======== Header ======== */
+        header {
+            padding: 100px 20px 60px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -100px; left: 50%;
+            transform: translateX(-50%);
+            width: 60%; height: 200px;
+            background: radial-gradient(circle, rgba(228, 0, 43, 0.4) 0%, transparent 70%);
+            filter: blur(60px);
+            z-index: -1;
+        }
+
+        header h1 {
+            font-size: 5rem;
+            margin: 0;
+            line-height: 0.9;
+            font-weight: 700;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+            text-shadow: 0 0 20px rgba(228, 0, 43, 0.5);
+        }
+
+        header p {
+            color: var(--t1-gray);
+            font-size: 1.1rem;
+            margin-top: 20px;
+            letter-spacing: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            border-top: 1px solid #333;
+            display: inline-block;
+            padding-top: 20px;
+        }
+
+        header span.year {
+            color: var(--text-white);
+            background: var(--t1-red);
+            padding: 2px 8px;
+            font-weight: 700;
+            clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%);
+        }
+
+        /* ======== Grid System (核心修改處) ======== */
+        .container {
+            max-width: 95%; /* 寬度設為 95% 以容納 5 張卡片 */
+            margin: 0 auto 120px;
+            padding: 0 20px;
+            display: grid;
+            /* 強制分成 5 個等寬的欄位 (不會換行) */
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px; /* 間距稍微縮小 */
+            perspective: 1000px;
+        }
+
+        /* ======== Player Card ======== */
+        .player-card {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .player-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-inner {
+            background: var(--card-bg);
+            height: 100%;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - 20px), 
+                calc(100% - 20px) 100%, 
+                0 100%
+            );
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-card:hover .card-inner {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--t1-red);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            z-index: 10;
+        }
+
+        .img-wrapper {
+            width: 100%;
+            height: 400px; /* 稍微調整高度 */
+            overflow: hidden;
+            position: relative;
+            background: #111;
+        }
+
+        .img-wrapper::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, rgba(26,26,26,1) 0%, rgba(26,26,26,0.6) 20%, transparent 60%);
+            z-index: 1;
+        }
+
+        .player-img {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center top;
+            transition: transform 0.6s ease, filter 0.6s ease;
+            filter: grayscale(100%) contrast(1.1) brightness(0.9);
+        }
+
+        .player-card:hover .player-img {
+            filter: grayscale(0%) contrast(1.1) brightness(1.1);
+            transform: scale(1.1);
+        }
+
+        .player-info {
+            padding: 15px 20px 30px;
+            position: relative;
+            z-index: 2;
+            margin-top: -80px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            color: var(--t1-red);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            border-left: 3px solid var(--t1-red);
+            padding-left: 10px;
+        }
+
+        .player-info h2 {
+            font-size: 2.8rem; /* 字體稍微縮小以適應並排 */
+            margin: 0;
+            font-weight: 800;
+            font-style: italic;
+            line-height: 0.9;
+            color: #fff;
+            text-transform: uppercase;
+            transition: color 0.3s;
+            white-space: nowrap; /* 確保名字不換行 */
+        }
+
+        .player-card:hover .player-info h2 {
+            color: var(--t1-red);
+            text-shadow: 0 0 10px rgba(228, 0, 43, 0.4);
+        }
+
+        .player-info p {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            font-weight: 500;
+            opacity: 0.8;
+            border-top: 1px solid #444;
+            padding-top: 10px;
+            display: block;
+        }
+
+        /* FAKER GOLD */
+        .faker-card .card-inner {
+            border: 1px solid #555;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a0000 100%);
+        }
+        .faker-card .player-info h2 {
+            background: linear-gradient(to bottom, #fff, var(--t1-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .faker-card:hover .player-info h2 {
+             -webkit-text-fill-color: var(--t1-red);
+        }
+
+        /* ======== MODAL ======== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: #111;
+            width: 90%;
+            max-width: 1100px;
+            display: flex;
+            position: relative;
+            transform: scale(0.95);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: 0 0 0 1px #333, 0 0 50px rgba(228, 0, 43, 0.2);
+            overflow: hidden;
+        }
+        .modal-content::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border: 2px solid transparent;
+            background: 
+                linear-gradient(to right, var(--t1-red) 2px, transparent 2px) 0 0,
+                linear-gradient(to bottom, var(--t1-red) 2px, transparent 2px) 0 0,
+                linear-gradient(to left, var(--t1-red) 2px, transparent 2px) 100% 0,
+                linear-gradient(to bottom, var(--t1-red) 2px, transparent 2px) 100% 0,
+                linear-gradient(to right, var(--t1-red) 2px, transparent 2px) 0 100%,
+                linear-gradient(to top, var(--t1-red) 2px, transparent 2px) 0 100%,
+                linear-gradient(to left, var(--t1-red) 2px, transparent 2px) 100% 100%,
+                linear-gradient(to top, var(--t1-red) 2px, transparent 2px) 100% 100%;
+            background-size: 20px 20px;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .close-btn {
+            position: absolute;
+            top: 20px; right: 25px;
+            color: #fff;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 20;
+            width: 40px; height: 40px;
+            text-align: center;
+            line-height: 40px;
+            background: rgba(255,255,255,0.1);
+            transition: 0.2s;
+        }
+        .close-btn:hover { background: var(--t1-red); }
+        .modal-img-box {
+            flex: 1; min-height: 550px; position: relative; overflow: hidden; background: #050505;
+        }
+        .modal-img-box::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            z-index: 2; pointer-events: none;
+        }
+        .modal-img {
+            width: 100%; height: 100%; background-size: cover; background-position: center;
+            filter: contrast(1.1) saturate(1.1);
+            mask-image: linear-gradient(to right, black 80%, transparent 100%);
+        }
+        .modal-text-box {
+            flex: 1.2; padding: 60px; display: flex; flex-direction: column; justify-content: center;
+            background: radial-gradient(circle at top right, rgba(228,0,43,0.1) 0%, transparent 40%), linear-gradient(to right, #111, #161616);
+        }
+        .modal-role {
+            color: var(--t1-red); font-weight: 700; letter-spacing: 4px; text-transform: uppercase; font-size: 1rem; margin-bottom: 5px; display: flex; align-items: center;
+        }
+        .modal-role::before {
+            content: ""; display: inline-block; width: 8px; height: 8px; background: var(--t1-red); margin-right: 10px; box-shadow: 0 0 10px var(--t1-red);
+        }
+        .modal-name {
+            font-size: 5rem; line-height: 0.9; font-weight: 900; font-style: italic; margin: 0 0 25px 0; text-transform: uppercase;
+            background: linear-gradient(90deg, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .modal-desc {
+            color: #ccc; line-height: 1.8; margin-bottom: 40px; font-size: 1.05rem; border-left: 2px solid #333; padding-left: 20px;
+        }
+        .stats-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; border-top: 1px solid #333; padding-top: 30px;
+        }
+        .stat-item h4 { color: #666; font-size: 0.8rem; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-item span { font-size: 2rem; font-weight: 700; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); font-family: 'Rajdhani', sans-serif; }
+        .champions-list { display: flex; gap: 10px; }
+        .champ-icon {
+            width: 50px; height: 50px; background: #1a1a1a; border: 1px solid #333; display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; color: #aaa; font-weight: 700; text-transform: uppercase; transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%);
+        }
+        .champ-icon:hover { border-color: var(--t1-red); color: #fff; background: #222; }
+        footer { text-align: center; padding: 40px; border-top: 1px solid #222; color: #555; font-size: 0.8rem; letter-spacing: 2px; }
+
+        /* RWD: 手機版仍需變為單欄，否則會無法閱讀 */
+        @media (max-width: 900px) {
+            header h1 { font-size: 3.5rem; }
+            /* 在小螢幕下恢復堆疊，否則5個並排會變成牙籤寬度 */
+            .container { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+            .modal-content { flex-direction: column; width: 95%; max-height: 90vh; overflow-y: auto; }
+            .modal-img-box { min-height: 250px; flex: none; }
+            .modal-img { mask-image: none; }
+            .modal-text-box { padding: 30px; }
+            .modal-name { font-size: 3rem; }
+            .stats-grid { grid-template-columns: 1fr; gap: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>SK Telecom T1 <br><span style="font-size: 0.4em; vertical-align: middle; color:var(--t1-red); font-style: italic;">//</span> ROSTER</h1>
+        <p>League of Legends Champions Korea <span class="year">2026</span></p>
+    </header>
+
+    <div class="container">
+        <div class="player-card" data-id="doran">
+            <div class="card-inner">
+                <div class="img-wrapper">
+                    <div class="player-img" style="background-image: url('https://lck.legendaries.com/_next/image?url=https%3A%2F%2Flck-cdn.legendaries.com%2Fplayer%2Fimages%2F1685961637743.png&w=640&q=75');"></div>
+                </div>
+                <div class="player-info">
+                    <span class="role-badge">Top</span>
+                    <h2>Doran</h2>
+                    <p>崔玄準</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="player-card" data-id="oner">
+            <div class="card-inner">
+                <div class="img-wrapper">
+                    <div class="player-img" style="background-image: url('https://lck-cdn.legendaries.com/player/images/1685962061228.png');"></div>
+                </div>
+                <div class="player-info">
+                    <span class="role-badge">Jungle</span>
+                    <h2>Oner</h2>
+                    <p>文炫竣</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="player-card faker-card" data-id="faker">
+            <div class="card-inner">
+                <div class="img-wrapper">
+                    <div class="player-img" style="background-image: url('https://lck-cdn.legendaries.com/player/images/1685965775214.png');"></div>
+                </div>
+                <div class="player-info">
+                    <span class="role-badge" style="background:none; border-color:#d4af37; color:#d4af37;">Mid / Leader</span>
+                    <h2>Faker</h2>
+                    <p style="color:#ddd;">李相赫</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="player-card" data-id="peyz">
+            <div class="card-inner">
+                <div class="img-wrapper">
+                    <div class="player-img" style="background-image: url('https://lck-cdn.legendaries.com/player/images/1685961673043.png');"></div>
+                </div>
+                <div class="player-info">
+                    <span class="role-badge">ADC</span>
+                    <h2>Peyz</h2>
+                    <p>太子</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="player-card" data-id="keria">
+            <div class="card-inner">
+                <div class="img-wrapper">
+                    <div class="player-img" style="background-image: url('https://lck-cdn.legendaries.com/player/images/1685965611938.png');"></div>
+                </div>
+                <div class="player-info">
+                    <span class="role-badge">Support</span>
+                    <h2>Keria</h2>
+                    <p>柳岷析</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="playerModal">
+        <div class="modal-content">
+            <div class="close-btn" onclick="closeModal()">×</div>
+            
+            <div class="modal-img-box">
+                <div class="modal-img" id="modalImg"></div>
+            </div>
+            
+            <div class="modal-text-box">
+                <div class="modal-role" id="modalRole">TOP</div>
+                <h2 class="modal-name" id="modalName">DORAN</h2>
+                <p class="modal-desc" id="modalDesc">
+                    這裡是選手介紹文字...
+                </p>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <h4>Signature Picks</h4>
+                        <div class="champions-list" id="modalChamps"></div>
+                    </div>
+                    <div class="stat-item">
+                        <h4>Season Win Rate</h4>
+                        <span id="modalWinRate" style="color:var(--t1-red);">62%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© T1 Sports & Entertainment. ALL RIGHTS RESERVED.<br>此為非營利目的之粉絲網站，一切版權應在T1官方，此網站僅用於網頁製作的課堂報告. </p>
+    </footer>
+
+    <script>
+        const playersData = {
+            "doran": {
+                name: "崔玄準", ID:"Doran", role: "TOP LANER",
+                img: "https://esportsinsider.com/wp-content/uploads/2025/11/Doran-T1-League-of-Legends.jpg", 
+                desc: "Doran 是一名老練、具備豐富大賽經驗的上路選手。他的職業生涯從新人時期的堅持努力，一路走到世界賽冠軍的最高舞台，展現了堅毅的職業精神。2026 賽季，他將繼續以 T1 上路的身份，驅動 T1 這支隊伍在 LCK 與國際舞台上衝刺新的榮耀。",
+                champs: ["安比薩", "古拉格斯", "賈克斯"], winRate: "62%"
+            },
+            "oner": {
+                name: "文炫竣", ID:"Oner", role: "JUNGLER",
+                img: "https://www.sheepesports.com/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F9rqbl8zs%2Fproduction%2F47abe580383c7cb06381a68814c216dbefcc67a2-3840x2180.webp&w=3840&q=75",
+                desc: "Oner 是 LCK 乃至全球英雄聯盟舞台上最受尊敬的打野選手之一。他從青訓選手一路打拼到世界冠軍，展現了卓越的職業精神與技術能力。2026 賽季，他將繼續以 T1 打野的身份，引領 T1 這支隊伍在 LCK、MSI 以及世界大賽上追求新的高峰。",
+                champs: ["李星", "維爾戈", "菲艾"], winRate: "66%"
+            },
+            "faker": {
+                name: "李相赫", ID:"Faker", role: "MID LANER",
+                img: "https://p2.bahamut.com.tw/B/2KU/81/c4e7dd10d03702e3620a3b7ae41v3vp5.JPG?v=1753627786450",
+                desc: "Faker 不僅是 T1 的核心選手，更是全球 LoL 歷史上最具代表性的傳奇選手。他的電競職業生涯超過十年，從2013年出道起，至今仍持續為 T1 效力，並時刻保持著頂尖表現，在2023~2025年連續奪下三次世界冠軍。2026 賽季，Faker 將繼續在 T1 這支隊伍裡書寫專屬於他的傳奇之路。",
+                champs: ["阿祈爾", "阿璃", "奧利安娜"], winRate: "72%"
+            },
+            "peyz": {
+                name: "金修奐", ID:"Peyz", role: "BOT LANER",
+                img: "https://p2.bahamut.com.tw/B/2KU/57/f38106c1f19f4d744ad9b657421wiv55.JPG?v=1763552986615",
+                desc: "Peyz 是目前最具潛力的 年輕 ADC 明日之星，以優秀的機械能力、戰術理解與大賽經驗，躋身成為目前最頂尖的選手之一。2026 賽季，他選擇加入 T1 這支隊伍並扮演關鍵角色，或將成為新一代的“T1王朝的延續者”，未來可能成為世界舞台上最強的選手之一。",
+                champs: ["婕莉", "凱莎", "亞菲利歐"], winRate: "68%"
+            },
+            "keria": {
+                name: "柳岷析", ID:"Keria", role: "SUPPORT",
+                img: "https://cdn.oneesports.gg/cdn-data/2023/11/LeagueOfLegends_T1_Keria_2023_Worlds_Swiss_promos.jpg",
+                desc: "Keria 是擁有無限英雄池的天才型選手，是戰場上的指揮家，他的創造性打法重新定義了輔助的角色。他的高水準執行、比賽洞察與大賽經驗也讓他成為全球最具影響力的 Support 選手之一。2026 賽季，他將依然在國內聯賽或世界舞台，成為支撐隊伍勝利關鍵核心選手。",
+                champs: ["巴德", "派克", "睿娜妲"], winRate: "70%"
+            }
+        };
+
+        const modal = document.getElementById('playerModal');
+        const cards = document.querySelectorAll('.player-card');
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                const playerId = card.getAttribute('data-id');
+                const data = playersData[playerId];
+                if (data) {
+                    document.getElementById('modalName').innerText = data.ID;
+                    document.getElementById('modalRole').innerText = data.role + " // " + data.name;
+                    document.getElementById('modalDesc').innerText = data.desc;
+                    document.getElementById('modalWinRate').innerText = data.winRate;
+                    document.getElementById('modalImg').style.backgroundImage = `url('${data.img}')`;
+                    const champContainer = document.getElementById('modalChamps');
+                    champContainer.innerHTML = ''; 
+                    data.champs.forEach(champ => {
+                        const span = document.createElement('div');
+                        span.className = 'champ-icon';
+                        span.innerText = champ.substring(0, 2); 
+                        champContainer.appendChild(span);
+                    });
+                    modal.classList.add('active');
+                }
+            });
+        });
+
+        function closeModal() { modal.classList.remove('active'); }
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeModal(); });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, idx) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => { entry.target.classList.add("show"); }, idx * 100);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            cards.forEach(card => observer.observe(card));
+        });
+    </script>
+</body>
+</html>
